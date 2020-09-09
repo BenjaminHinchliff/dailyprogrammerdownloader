@@ -46,7 +46,7 @@ async fn main() {
             .expect("failed to refresh challenges"),
         _ => {
             println!("must specify a subcommand");
-        },
+        }
     }
 
     cache
