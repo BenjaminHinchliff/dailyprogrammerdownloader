@@ -9,6 +9,8 @@ pub async fn refresh(
     client: &reqwest::Client,
     cache: &mut sled::Db,
 ) -> Result<(), Error> {
+    println!("refreshing challenges list...");
+
     let res = client
         .get(base.join("/r/dailyprogrammer/wiki/challenges").unwrap())
         .send()
@@ -66,5 +68,6 @@ pub async fn refresh(
             .expect("failed to insert a post into the cache");
     }
 
+    println!("refreshed the challenges!");
     Ok(())
 }

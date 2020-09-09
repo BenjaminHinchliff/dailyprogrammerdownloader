@@ -14,15 +14,13 @@ async fn main() {
     let yaml = load_yaml!("cli.yml");
     let app = App::from_yaml(yaml);
     let matches = app.get_matches();
-    let (command, args) = matches.subcommand();
+    let (command, _args) = matches.subcommand();
 
     let mut cache = sled::open("./cache").expect("failed to open cache");
 
     let token = cached_authenticate(&mut cache)
         .await
         .expect("failed to get token");
-
-    println!("{}", token);
 
     let reddit_oauth_base = Url::parse(REDDIT_OAUTH_BASE).expect("invalid base api url");
 

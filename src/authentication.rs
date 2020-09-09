@@ -26,10 +26,11 @@ pub async fn authenticate() -> Result<String, Error> {
         state
     );
 
-    println!("opening permission in browser");
-    println!("{}", authorize_url);
-
-    webbrowser::open(&authorize_url)?;
+    println!("opening oauth2 implicit grant link in default browser...");
+    if let Err(_) = webbrowser::open(&authorize_url) {
+        println!("failed to open link in browser - open this link in one:");
+        println!("{}", authorize_url);
+    }
 
     let server = Server::http("0.0.0.0:3000").map_err(|_| AuthError::ServerCreationError)?;
 
@@ -66,6 +67,7 @@ pub async fn cached_authenticate(cache: &mut sled::Db) -> Result<String, Error> 
             .unwrap();
         new_token
     } else {
+        println!("cached token found!");
         String::from_utf8_lossy(&cache_token.unwrap()).to_string()
     })
 }
