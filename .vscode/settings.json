@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "Hinchliff",
         "Seedable",
         "chacha",
         "chrono",
@@ -7,6 +8,8 @@
         "dailyprogrammer",
         "htmlescape",
         "reqwest",
+        "subcommand",
+        "subcommands",
         "tbody",
         "thiserror",
         "webbrowser",

@@ -1,0 +1,7 @@
+name: Daily Programmer Querier
+version: "0.1.0"
+author: Benjamin Hinchliff <benjamin.hinchliff@gmail.com>
+about: a cli interface for r/dailyprogrammer built with the reddit api, rust, and a lot of parsing code
+subcommands:
+    - refresh:
+        about: refreshes the list of r/dailyprogrammer posts and saves it to the cache

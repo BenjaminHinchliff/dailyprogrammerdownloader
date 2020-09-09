@@ -1,6 +1,6 @@
 use anyhow::Error;
-use url::Url;
 use scraper::{Html, Selector};
+use url::Url;
 
 use super::wikipage::WikiPage;
 
