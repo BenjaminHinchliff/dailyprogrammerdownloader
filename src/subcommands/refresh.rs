@@ -1,28 +1,34 @@
-use anyhow::Error;
+use chrono::prelude::*;
 use scraper::{Html, Selector};
 use url::Url;
 
 use super::wikipage::WikiPage;
 
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("failed to decode entities")]
+    EntityDecodeError(htmlescape::DecodeErr),
+    #[error("{0} in the document is none")]
+    HtmlNoneError(&'static str),
+    #[error("{0} attribute is missing")]
+    NoAttr(&'static str),
+}
+
 pub async fn refresh(
     base: &Url,
     client: &reqwest::Client,
     cache: &mut sled::Db,
-) -> Result<(), Error> {
+) -> Result<(), anyhow::Error> {
     println!("refreshing challenges list...");
 
     let res = client
-        .get(base.join("/r/dailyprogrammer/wiki/challenges").unwrap())
+        .get(base.join("/r/dailyprogrammer/wiki/challenges")?)
         .send()
-        .await
-        .expect("failed to fetch challenges index");
-    let json = res
-        .json::<WikiPage>()
-        .await
-        .expect("failed to get challenge index response");
+        .await?;
+    let json = res.json::<WikiPage>().await?;
 
     let corrected_content = htmlescape::decode_html(&json.data.content_html)
-        .unwrap()
+        .map_err(|e| Error::EntityDecodeError(e))?
         .replace("\n", "");
 
     let content = Html::parse_fragment(&corrected_content);
@@ -35,11 +41,11 @@ pub async fn refresh(
         content
             .select(&challenges_selector)
             .next()
-            .expect("failed to select challenge title")
+            .ok_or_else(|| Error::HtmlNoneError("content element"))?
             .next_sibling()
-            .expect("failed to get challenge table"),
+            .ok_or_else(|| Error::HtmlNoneError("table element"))?,
     )
-    .expect("failed to convert table node to element");
+    .ok_or_else(|| Error::HtmlNoneError("conversion error"))?;
 
     let trs = challenges.select(&tr_selector);
 
@@ -47,26 +53,26 @@ pub async fn refresh(
         let mut tds = tr.select(&td_selector);
         let id = tds
             .nth(1)
-            .expect("failed to get id for a post")
+            .ok_or_else(|| Error::HtmlNoneError("id"))?
             .inner_html();
         let difficulty = tds
             .next()
-            .expect("failed to get a difficulty for a post")
+            .ok_or_else(|| Error::HtmlNoneError("difficulty"))?
             .inner_html();
         let post = tr
             .select(&a_selector)
             .last()
-            .expect("failed to get the link for a post")
+            .ok_or_else(|| Error::HtmlNoneError("link"))?
             .value()
             .attr("href")
-            .expect("failed to extract href from post link");
-        cache
-            .insert(
-                format!("challenge-{}-{}", id, difficulty.to_lowercase()),
-                post,
-            )
-            .expect("failed to insert a post into the cache");
+            .ok_or_else(|| Error::NoAttr("href"))?;
+        cache.insert(
+            format!("challenge-{}-{}", id, difficulty.to_lowercase()),
+            post,
+        )?;
     }
+
+    cache.insert("challenges", Utc::now().to_rfc3339().as_bytes())?;
 
     println!("refreshed the challenges!");
     Ok(())
