@@ -6,9 +6,9 @@ mod authentication;
 use authentication::cached_authenticate;
 
 mod commentspage;
-mod wikipage;
-mod refresh;
 mod download;
+mod refresh;
+mod wikipage;
 
 const REDDIT_OAUTH_BASE: &'static str = "https://oauth.reddit.com";
 
@@ -49,11 +49,11 @@ async fn main() -> Result<(), anyhow::Error> {
         refresh::refresh(&reddit_oauth_base, &client, &mut cache).await?;
     }
 
-    let id = value_t!(matches.value_of("id"), i32)
-        .map_err(|_| Error::InvalidArgument("id must be an int"))?;
+    let id = vec![value_t!(matches.value_of("id"), i32).map_err(|_| Error::InvalidArgument("id must be an int"))?];
     let difficulties: Vec<_> = matches.values_of("difficulties").unwrap().collect();
-    download::download(id, &difficulties, &reddit_oauth_base, &client, &cache).await?;
-    println!("downloaded {} posts", difficulties.len());
+    let num_posts = id.len() * difficulties.len();
+    download::download(id, difficulties, &reddit_oauth_base, &client, &cache).await?;
+    println!("downloaded {} posts", num_posts);
 
     cache.flush_async().await?;
 
