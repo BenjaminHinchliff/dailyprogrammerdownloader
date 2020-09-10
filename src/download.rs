@@ -16,6 +16,7 @@ pub async fn download(
     client: &reqwest::Client,
     cache: &sled::Db,
 ) -> Result<(), anyhow::Error> {
+    
     let challenge_key = format!("challenge-{}-{}", id, difficulties[0]);
     let url = base.join(&String::from_utf8_lossy(
         &cache
