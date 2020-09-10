@@ -53,6 +53,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .map_err(|_| Error::InvalidArgument("id must be an int"))?;
     let difficulties: Vec<_> = matches.values_of("difficulties").unwrap().collect();
     download::download(id, &difficulties, &reddit_oauth_base, &client, &cache).await?;
+    println!("downloaded {} posts", difficulties.len());
 
     cache.flush_async().await?;
 
