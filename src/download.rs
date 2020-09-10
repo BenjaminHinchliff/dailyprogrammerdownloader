@@ -1,7 +1,7 @@
 use tokio::fs;
 use tokio::prelude::*;
 
-use super::commentspage::Comment;
+use crate::commentspage::Comment;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -9,7 +9,7 @@ pub enum Error {
     InvalidChallenge,
 }
 
-pub async fn get(
+pub async fn download(
     id: i32,
     difficulties: &Vec<&str>,
     base: &url::Url,

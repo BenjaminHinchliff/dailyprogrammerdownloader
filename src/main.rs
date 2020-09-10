@@ -5,7 +5,10 @@ use url::Url;
 mod authentication;
 use authentication::cached_authenticate;
 
-mod subcommands;
+mod commentspage;
+mod wikipage;
+mod refresh;
+mod download;
 
 const REDDIT_OAUTH_BASE: &'static str = "https://oauth.reddit.com";
 
@@ -43,13 +46,13 @@ async fn main() -> Result<(), anyhow::Error> {
         .build()?;
 
     if cache.get("challenges").unwrap().is_none() || matches.is_present("refresh") {
-        subcommands::refresh(&reddit_oauth_base, &client, &mut cache).await?;
+        refresh::refresh(&reddit_oauth_base, &client, &mut cache).await?;
     }
 
     let id = value_t!(matches.value_of("id"), i32)
         .map_err(|_| Error::InvalidArgument("id must be an int"))?;
     let difficulties: Vec<_> = matches.values_of("difficulties").unwrap().collect();
-    subcommands::get(id, &difficulties, &reddit_oauth_base, &client, &cache).await?;
+    download::download(id, &difficulties, &reddit_oauth_base, &client, &cache).await?;
 
     cache.flush_async().await?;
 
