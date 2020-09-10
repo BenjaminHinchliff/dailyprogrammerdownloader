@@ -15,3 +15,4 @@ args:
         required: true
         index: 2
         help: the difficult(ies) of the id to get
+        min_values: 1

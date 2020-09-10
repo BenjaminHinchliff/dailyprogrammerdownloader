@@ -59,16 +59,17 @@ pub async fn refresh(
             .next()
             .ok_or_else(|| Error::HtmlNoneError("difficulty"))?
             .inner_html();
-        let post = tr
+        let href = tr
             .select(&a_selector)
             .last()
             .ok_or_else(|| Error::HtmlNoneError("link"))?
             .value()
             .attr("href")
             .ok_or_else(|| Error::NoAttr("href"))?;
+        let href = Url::parse(href)?;
         cache.insert(
             format!("challenge-{}-{}", id, difficulty.to_lowercase()),
-            post,
+            href.path(),
         )?;
     }
 
