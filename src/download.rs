@@ -27,7 +27,6 @@ pub async fn download(
     let post = &comments[0].data.children[0].data;
     let title = &post.fields["title"];
     let text = &post.fields["selftext"];
-    println!("{}", text);
     let mut file = fs::File::create(challenge_key + ".md").await?;
     file.write_all(b"# ").await?;
     file.write_all(
