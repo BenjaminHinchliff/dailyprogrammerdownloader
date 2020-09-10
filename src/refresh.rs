@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use regex::Regex;
 use scraper::{Html, Selector};
 use url::Url;
 
@@ -49,12 +50,19 @@ pub async fn refresh(
 
     let trs = challenges.select(&tr_selector);
 
+    let not_int_regex = Regex::new("[^0-9]")?;
+    let mut max = 0;
     for tr in trs {
         let mut tds = tr.select(&td_selector);
-        let id = tds
-            .nth(1)
-            .ok_or_else(|| Error::HtmlNoneError("id"))?
-            .inner_html();
+        let id = not_int_regex
+            .replace_all(
+                &tds.nth(1)
+                    .ok_or_else(|| Error::HtmlNoneError("id"))?
+                    .inner_html(),
+                "",
+            )
+            .parse::<i32>()?;
+        max = std::cmp::max(max, id);
         let difficulty = tds
             .next()
             .ok_or_else(|| Error::HtmlNoneError("difficulty"))?
@@ -73,6 +81,7 @@ pub async fn refresh(
         )?;
     }
 
+    cache.insert("challenges-max", max.to_string().as_bytes())?;
     cache.insert("challenges", Utc::now().to_rfc3339().as_bytes())?;
 
     println!("refreshed the challenges!");

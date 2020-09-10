@@ -49,7 +49,14 @@ async fn main() -> Result<(), anyhow::Error> {
         refresh::refresh(&reddit_oauth_base, &client, &mut cache).await?;
     }
 
-    let id = vec![value_t!(matches.value_of("id"), i32).map_err(|_| Error::InvalidArgument("id must be an int"))?];
+    let id = matches.value_of("id").unwrap();
+    let id = if id == "all" {
+        (1..String::from_utf8_lossy(&cache.get("challenges-max")?.unwrap()).parse::<i32>()?)
+            .collect()
+    } else {
+        vec![value_t!(matches.value_of("id"), i32)
+            .map_err(|_| Error::InvalidArgument("id must be an int or 'all'"))?]
+    };
     let difficulties: Vec<_> = matches.values_of("difficulties").unwrap().collect();
     let num_posts = id.len() * difficulties.len();
     download::download(id, difficulties, &reddit_oauth_base, &client, &cache).await?;

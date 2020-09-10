@@ -23,6 +23,7 @@ where
     U: IntoIterator<Item = &'a str>,
     U::IntoIter: Clone,
 {
+    // TODO: make this actually async
     for (id, diff) in id.into_iter().cartesian_product(diffs.into_iter()) {
         let challenge_key = format!("challenge-{}-{}", id, diff);
         let url = base.join(&String::from_utf8_lossy(
@@ -30,6 +31,8 @@ where
                 .get(&challenge_key)?
                 .ok_or_else(|| Error::InvalidChallenge)?,
         ))?;
+
+        println!("{:?}", url);
 
         let comments = client.get(url).send().await?.json::<Vec<Comment>>().await?;
         let post = &comments[0].data.children[0].data;
