@@ -58,8 +58,7 @@ async fn main() -> Result<(), anyhow::Error> {
             .map_err(|_| Error::InvalidArgument("id must be an int or 'all'"))?]
     };
     let difficulties: Vec<_> = matches.values_of("difficulties").unwrap().collect();
-    let num_posts = id.len() * difficulties.len();
-    download::download(id, difficulties, &reddit_oauth_base, &client, &cache).await?;
+    let num_posts = download::download(id, difficulties, &reddit_oauth_base, &client, &cache).await?;
     println!("downloaded {} posts", num_posts);
 
     cache.flush_async().await?;
