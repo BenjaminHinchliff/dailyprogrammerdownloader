@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use std::fs;
+use std::str::FromStr;
 
 use anyhow::Error;
 use chrono::prelude::*;
-use tiny_http::{Response, Server};
+use tiny_http::{Response, Server, Header};
 use url::Url;
 
 const HOUR_AS_SECONDS: i64 = 3600;
@@ -34,7 +34,8 @@ pub async fn authenticate() -> Result<String, Error> {
 
     let server = Server::http("0.0.0.0:3000").map_err(|_| AuthError::ServerCreationError)?;
 
-    let response = Response::from_file(fs::File::open("public/retrieval.html")?);
+    let mut response = Response::from_string(include_str!("../public/retrieval.html"));
+    response.add_header(Header::from_str("Content-Type: text/html").unwrap());
     let request = server.recv()?;
     request.respond(response)?;
     let request = server.recv()?;
